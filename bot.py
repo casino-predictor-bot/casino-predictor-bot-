@@ -28,3 +28,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Usa /predecir seguido del nombre del juego para recibir una señal.\n"
         "Ejemplo: /predecir slots"
     )
+async def predecir(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) == 0:
+        await update.message.reply_text("Por favor, escribe el nombre del juego. Ejemplo:\n/predecir slots")
+        return
+
+    juego = context.args[0].lower()
+    if juego not in juegos:
+        await update.message.reply_text(f"Juego no reconocido. Los juegos disponibles son:\n{', '.join(juegos.keys())}")
+        return
+
+    señal = random.choice(juegos[juego])
+    await update.message.reply_text(f"🎲 Señal para {juego}: {señal}")
