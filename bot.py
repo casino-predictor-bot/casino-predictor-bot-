@@ -40,3 +40,15 @@ async def predecir(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     señal = random.choice(juegos[juego])
     await update.message.reply_text(f"🎲 Señal para {juego}: {señal}")
+
+def main():
+    app = ApplicationBuilder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("predecir", predecir))
+
+    print("🤖 Bot corriendo... Ctrl+C para detener.")
+    app.run_polling()
+
+if __name__ == '__main__':
+    main()
