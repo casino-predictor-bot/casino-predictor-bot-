@@ -1,68 +1,61 @@
-import logging
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
+import telebot
 import random
-
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-
-TOKEN = "AQUÍ_VA_TU_TOKEN_DEL_BOT"
-admin_id = 123456789  # Reemplaza con tu ID de Telegram si quieres recibir notificaciones
-
-# Juegos disponibles
-juegos = {
-    "slots": ["🍒", "🔔", "💎", "🍋", "7️⃣"],
-    "penalty": ["Izquierda", "Centro", "Derecha"],
-    "mines": ["💣", "💎"],
-    "aviator": ["Sube", "Baja"],
-    "burgerwim": ["🍔", "🍟", "🥤"],
-    "latorre": ["⬆️", "⬇️"],
-    "pianotiles": ["🟦", "⬛", "⬜"]
-}
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🎰 Bienvenido al Bot Predictor de Casino Virtual.\n"
-        "Usa /predecir seguido del nombre del juego para recibir una señal.\n"
-        "Ejemplo: /predecir slots"
-    )
-async def predecir(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) == 0:
-        await update.message.reply_text("Por favor, escribe el nombre del juego. Ejemplo:\n/predecir slots")
-        return
-
-    juego = context.args[0].lower()
-    if juego not in juegos:
-        await update.message.reply_text(f"Juego no reconocido. Los juegos disponibles son:\n{', '.join(juegos.keys())}")
-        return
-
-    señal = random.choice(juegos[juego])
-    await update.message.reply_text(f"🎲 Señal para {juego}: {señal}")
-
-def main():
-    app = ApplicationBuilder().token(TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("predecir", predecir))
-
-    print("🤖 Bot corriendo... Ctrl+C para detener.")
-    app.run_polling()
-
-if __name__ == '__main__':
-    main()
-
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import time
+import datetime
 import os
 
-TOKEN = os.getenv("BOT_TOKEN")
+# Lee el token desde la variable de entorno
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+bot = telebot.TeleBot(BOT_TOKEN)
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🎰 Bienvenido al bot predictor de casino.")
+# Lista de juegos disponibles
+juegos = ["🎰 Tragamonedas", "🚀 Aviator", "💣 Mines", "⚽ Penalty", "🍔 Burger Whim", "🎹 Piano Tiles", "🗼 La Torre"]
 
-app = ApplicationBuilder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
+# Estrategias de ejemplo
+estrategias = [
+    "🔁 Usa la técnica de duplicar la apuesta solo 2 veces.",
+    "🕒 Juega solo entre las 2:00 PM y 4:00 PM, mejor probabilidad.",
+    "🔍 Observa 3 rondas sin apostar y luego entra.",
+    "💸 Retírate después de 3 victorias seguidas.",
+]
 
-app.run_polling()
+# Predicciones automáticas simples
+def generar_prediccion():
+    juego = random.choice(juegos)
+    resultado = random.choice(["Alta probabilidad de ganar", "Riesgo medio", "Mejor evitar por ahora"])
+    hora = datetime.datetime.now().strftime("%H:%M")
+    return f"🔮 Predicción para {juego} a las {hora}:\n➡️ {resultado}"
+
+# Mensaje de bienvenida
+@bot.message_handler(commands=['start', 'ayuda'])
+def enviar_bienvenida(message):
+    bot.reply_to(message, f"""🎰 Hola {message.from_user.first_name}, soy tu bot de confianza para ganar en estas apuestas. 
+Prepárate para recibir señales, predicciones y estrategias para los juegos de casino virtuales.
+
+Usa estos comandos:
+👉 /estrategia – para una estrategia útil
+👉 /prediccion – para una predicción en tiempo real
+👉 /senal – para una señal automática
+""")
+
+# Comando para enviar una estrategia aleatoria
+@bot.message_handler(commands=['estrategia'])
+def enviar_estrategia(message):
+    estrategia = random.choice(estrategias)
+    bot.reply_to(message, f"📊 Estrategia de hoy:\n{estrategia}")
+
+# Comando para enviar una predicción
+@bot.message_handler(commands=['prediccion'])
+def enviar_prediccion(message):
+    pred = generar_prediccion()
+    bot.reply_to(message, pred)
+
+# Comando para enviar una señal aleatoria
+@bot.message_handler(commands=['senal'])
+def enviar_senal(message):
+    juego = random.choice(juegos)
+    bot.reply_to(message, f"📡 Señal de entrada:\nJuega ahora {juego} con responsabilidad. ¡Es tu momento de ganar!")
+
+# Inicia el bot
+print("Bot activo...")
+bot.infinity_polling()
